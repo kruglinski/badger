@@ -38,7 +38,7 @@ import (
 	"unsafe"
 
 	"github.com/dgraph-io/badger/v2/y"
-	"github.com/dgraph-io/ristretto/z"
+	//"github.com/dgraph-io/ristretto/z"
 )
 
 const (
@@ -165,9 +165,23 @@ func (s *node) casNextOffset(h int, old, val uint32) bool {
 //	return n != nil && y.CompareKeys(key, n.key) > 0
 //}
 
+var state uint32 = 1
+
+func fastrand() uint32 {
+	fr := state
+	mx := uint32(int32(fr)>>31) & 0xa8888eef
+	fr = fr<<1 ^ mx
+	state = fr
+	return fr
+}
+
+func fastrandn(n uint32) uint32 {
+	return uint32(uint64(fastrand()) * uint64(n) >> 32)
+}
+
 func (s *Skiplist) randomHeight() int {
 	h := 1
-	for h < maxHeight && z.FastRand() <= heightIncrease {
+	for h < maxHeight && fastrand() <= heightIncrease {
 		h++
 	}
 	return h
